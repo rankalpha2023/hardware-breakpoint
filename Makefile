@@ -1,5 +1,5 @@
-CROSS:= aarch64-linux-gnu-
-KERNEL_DIR:= /home/zwf/x3_src/kernel
+CROSS?= aarch64-none-linux-gnu-
+KERNEL_DIR?= your kernel dir
 CURRENT_PATH:= $(shell pwd)
 MODULE_NAME= hw_break
 
@@ -13,9 +13,10 @@ EXTRA_CFLAGS+= $(includedir) -g
 
 obj-m:= $(MODULE_NAME).o
 $(MODULE_NAME)-objs+= 	hw_breakpoint.o \
-						src/hw_breakpointApi.o \
-    					src/hw_proc.o \
-    					src/hw_breakpointManage.o \
+						hw_breakpoint_manage.o \
+    					hw_breakpoint_proc.o \
+    					hw_breakpoint_smp.o \
+						hw_breakpoint_until.o \
     
 
 all: ko
