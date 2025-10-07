@@ -1,4 +1,4 @@
-CROSS?= aarch64-none-linux-gnu-
+CROSS?= aarch64-linux-android-
 KERNEL_DIR?= your kernel dir
 CURRENT_PATH:= $(shell pwd)
 MODULE_NAME= hw_break

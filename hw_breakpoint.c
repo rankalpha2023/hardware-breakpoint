@@ -8,6 +8,12 @@
 #include <asm/debug-monitors.h>
 #include "ext_hw_breakpoint.h"
 
+#if __has_attribute(__fallthrough__)
+# define fallthrough                    __attribute__((__fallthrough__))
+#else
+# define fallthrough                    do {} while (0)  /* fallthrough */
+#endif
+
 /*func extern*/
 extern int hw_bp_manage_init(void);
 extern int hw_proc_init(void);

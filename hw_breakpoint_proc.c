@@ -340,6 +340,14 @@ static const struct proc_ops hw_proc_fops = {
 	.proc_lseek = seq_lseek,
 	.proc_release = single_release,
 };
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
+static const struct file_operations hw_proc_fops = {
+	.open = hw_proc_open,
+	.write = hw_proc_write,
+	.read = seq_read,
+	.llseek = seq_lseek,
+	.release = single_release,
+};
 #else
 static const struct file_operations hw_proc_fops = {
 	.proc_open = hw_proc_open,
