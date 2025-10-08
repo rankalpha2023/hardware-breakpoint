@@ -85,6 +85,9 @@ struct fault_info {
 	int code;
 	const char *name;
 };
+
+#define HW_BP_RESTORE_SUPPORTED (defined(CONFIG_CPU_PM) && (defined(CONFIG_X86) || defined(CONFIG_X86_64)))
+
 typedef struct hw_kernel_api {
 	struct {
 		unsigned long (*kallsyms_lookup_name)(
@@ -108,7 +111,7 @@ typedef struct hw_kernel_api {
 		int (*watchpoint_handler)(unsigned long addr, unsigned int esr, struct pt_regs *regs);
 	} __aligned(128) fun;
 	struct {
-#ifdef CONFIG_CPU_PM
+#if HW_BP_RESTORE_SUPPORTED
 		u64 *hw_breakpoint_restore;
 		u64 default_hw_breakpoint_restore;
 #endif

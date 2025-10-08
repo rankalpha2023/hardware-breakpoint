@@ -754,7 +754,7 @@ static int hw_step_brk_fn(struct pt_regs *regs, unsigned int esr)
 }
 NOKPROBE_SYMBOL(hw_step_brk_fn);
 
-#ifdef CONFIG_CPU_PM
+#if HW_BP_RESTORE_SUPPORTED
 extern void cpu_suspend_set_dbg_restorer(int (*hw_bp_restore)(unsigned int));
 #else
 static inline void
@@ -863,7 +863,7 @@ static int hw_get_kernel_api(void)
 		return -1;
 	}	
 #endif	
-#ifdef CONFIG_CPU_PM
+#if HW_BP_RESTORE_SUPPORTED
 	HW_SYMS_VAL(hw_breakpoint_restore) = (void *)HW_SYMS_FUNC(
 		kallsyms_lookup_name)("hw_breakpoint_restore");
 	if (!HW_SYMS_VAL(hw_breakpoint_restore)) {
@@ -1015,7 +1015,7 @@ static int __init hw_bp_init(void)
 #endif
 
 	HW_SYMS_FUNC(register_step_hook)(&ghw_step_hook);
-#ifdef CONFIG_CPU_PM
+#if HW_BP_RESTORE_SUPPORTED
 	HW_SYMS_VAL(default_hw_breakpoint_restore) =
 		*HW_SYMS_VAL(hw_breakpoint_restore);
 	*HW_SYMS_VAL(hw_breakpoint_restore) = (u64)hw_bp_reset;
@@ -1031,7 +1031,7 @@ static void __exit hw_bp_exit(void)
 {
 	hw_proc_exit();
 	hw_bp_manage_deinit();
-#ifdef CONFIG_CPU_PM
+#if HW_BP_RESTORE_SUPPORTED
 	*HW_SYMS_VAL(hw_breakpoint_restore) =
 		HW_SYMS_VAL(default_hw_breakpoint_restore);
 #endif
