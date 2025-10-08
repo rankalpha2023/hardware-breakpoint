@@ -832,6 +832,7 @@ static int hw_get_kernel_api(void)
 	if (hw_get_kallsyms_lookup_name()) {
 		return -1;
 	}
+#if LINUX_VERSION_CODE > KERNEL_VERSION(5, 1, 10)	
 	HW_SYMS_VAL(debug_fault_info) =
 		(void *)HW_SYMS_FUNC(kallsyms_lookup_name)("debug_fault_info");
 	if (!HW_SYMS_VAL(debug_fault_info)) {
@@ -842,6 +843,26 @@ static int hw_get_kernel_api(void)
 	//        HW_SYMS_VAL(debug_fault_info)[0].name);
 	// pr_warn("debug_fault_info = %llx,name = %s\n", &HW_SYMS_VAL(debug_fault_info)[2],
 	//        HW_SYMS_VAL(debug_fault_info)[2].name);
+#else
+	HW_SYMS_FUNC(hook_debug_fault_code) = (void *)HW_SYMS_FUNC(
+		kallsyms_lookup_name)("hook_debug_fault_code");
+	if (!HW_SYMS_FUNC(hook_debug_fault_code)) {
+		pr_warn("get hook_debug_fault_code fail\n");
+		return -1;
+	}
+	HW_SYMS_FUNC(breakpoint_handler) = (void *)HW_SYMS_FUNC(
+		kallsyms_lookup_name)("breakpoint_handler");
+	if (!HW_SYMS_FUNC(breakpoint_handler)) {
+		pr_warn("get breakpoint_handler fail\n");
+		return -1;
+	}
+	HW_SYMS_FUNC(watchpoint_handler) = (void *)HW_SYMS_FUNC(
+		kallsyms_lookup_name)("watchpoint_handler");
+	if (!HW_SYMS_FUNC(watchpoint_handler)) {
+		pr_warn("get watchpoint_handler fail\n");
+		return -1;
+	}	
+#endif	
 #ifdef CONFIG_CPU_PM
 	HW_SYMS_VAL(hw_breakpoint_restore) = (void *)HW_SYMS_FUNC(
 		kallsyms_lookup_name)("hw_breakpoint_restore");
@@ -954,6 +975,7 @@ static int __init hw_bp_init(void)
 	pr_info("found %d breakpoint and %d watchpoint registers.\n",
 		core_num_brps, core_num_wrps);
 
+#if LINUX_VERSION_CODE > KERNEL_VERSION(5, 1, 10)	
 	/* register dbg exception hook */
 	/*bp*/
 	/*save pre vars*/
@@ -986,8 +1008,12 @@ static int __init hw_bp_init(void)
 	HW_SYMS_VAL(debug_fault_info)[DBG_ESR_EVT_HWWP].fn = hw_wp_handler;
 	HW_SYMS_VAL(debug_fault_info)[DBG_ESR_EVT_HWWP].sig = SIGTRAP;
 	HW_SYMS_VAL(debug_fault_info)[DBG_ESR_EVT_HWWP].code = TRAP_HWBKPT;
-	HW_SYMS_VAL(debug_fault_info)
-	[DBG_ESR_EVT_HWWP].name = "hw-watchpoint handler";
+	HW_SYMS_VAL(debug_fault_info)[DBG_ESR_EVT_HWWP].name = "hw-watchpoint handler";
+#else
+	HW_SYMS_FUNC(hook_debug_fault_code)(DBG_ESR_EVT_HWBP, hw_bp_handler, SIGTRAP, TRAP_HWBKPT, "hw-breakpoint handler");
+	HW_SYMS_FUNC(hook_debug_fault_code)(DBG_ESR_EVT_HWWP, hw_wp_handler, SIGTRAP, TRAP_HWBKPT, "hw-watchpoint handler");
+#endif
+
 	HW_SYMS_FUNC(register_step_hook)(&ghw_step_hook);
 #ifdef CONFIG_CPU_PM
 	HW_SYMS_VAL(default_hw_breakpoint_restore) =
@@ -1010,6 +1036,7 @@ static void __exit hw_bp_exit(void)
 		HW_SYMS_VAL(default_hw_breakpoint_restore);
 #endif
 	HW_SYMS_FUNC(unregister_step_hook)(&ghw_step_hook);
+#if LINUX_VERSION_CODE > KERNEL_VERSION(5, 1, 10)	
 	/*wp*/
 	HW_SYMS_VAL(debug_fault_info)
 	[DBG_ESR_EVT_HWWP].fn = HW_SYMS_VAL(default_fault_info)[1].fn;
@@ -1028,6 +1055,10 @@ static void __exit hw_bp_exit(void)
 	[DBG_ESR_EVT_HWBP].code = HW_SYMS_VAL(default_fault_info)[0].code;
 	HW_SYMS_VAL(debug_fault_info)
 	[DBG_ESR_EVT_HWBP].name = HW_SYMS_VAL(default_fault_info)[0].name;
+#else
+	HW_SYMS_FUNC(hook_debug_fault_code)(DBG_ESR_EVT_HWBP, breakpoint_handler, SIGTRAP, TRAP_HWBKPT, "hw-breakpoint handler");
+	HW_SYMS_FUNC(hook_debug_fault_code)(DBG_ESR_EVT_HWWP, watchpoint_handler, SIGTRAP, TRAP_HWBKPT, "hw-watchpoint handler");
+#endif	
 	printk(" hw_bp_exit\n");
 }
 

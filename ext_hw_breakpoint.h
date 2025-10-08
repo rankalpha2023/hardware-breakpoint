@@ -102,6 +102,10 @@ typedef struct hw_kernel_api {
 				       struct task_struct *tsk);
 		void (*do_bad)(unsigned long addr, unsigned int esr,
 			       struct pt_regs *regs);
+		void (*hook_debug_fault_code)(int nr, int (*fn)(unsigned long, unsigned int, struct pt_regs *), 
+		           int sig, int code, const char *name);
+		int (*breakpoint_handler)(unsigned long unused, unsigned int esr, struct pt_regs *regs);
+		int (*watchpoint_handler)(unsigned long addr, unsigned int esr, struct pt_regs *regs);
 	} __aligned(128) fun;
 	struct {
 #ifdef CONFIG_CPU_PM
