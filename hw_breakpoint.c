@@ -1056,8 +1056,8 @@ static void __exit hw_bp_exit(void)
 	HW_SYMS_VAL(debug_fault_info)
 	[DBG_ESR_EVT_HWBP].name = HW_SYMS_VAL(default_fault_info)[0].name;
 #else
-	HW_SYMS_FUNC(hook_debug_fault_code)(DBG_ESR_EVT_HWBP, breakpoint_handler, SIGTRAP, TRAP_HWBKPT, "hw-breakpoint handler");
-	HW_SYMS_FUNC(hook_debug_fault_code)(DBG_ESR_EVT_HWWP, watchpoint_handler, SIGTRAP, TRAP_HWBKPT, "hw-watchpoint handler");
+	HW_SYMS_FUNC(hook_debug_fault_code)(DBG_ESR_EVT_HWBP, HW_SYMS_FUNC(breakpoint_handler), SIGTRAP, TRAP_HWBKPT, "hw-breakpoint handler");
+	HW_SYMS_FUNC(hook_debug_fault_code)(DBG_ESR_EVT_HWWP, HW_SYMS_FUNC(watchpoint_handler), SIGTRAP, TRAP_HWBKPT, "hw-watchpoint handler");
 #endif	
 	printk(" hw_bp_exit\n");
 }
